@@ -8,24 +8,11 @@ DEPENDS_append_class-target = " libabigail-native"
 
 IMG_DIR="${WORKDIR}/image"
 
-python abi_compliance_gather_abixml() {
+python binary_audit_gather_abixml() {
     import glob
-    import subprocess
-    from xml.etree import ElementTree as ET
+    from binaryaudit import abicheck
 
     pn = d.getVar("PN")
-
-    #hdir = d.getVar('BUILDHISTORY_DIR_PACKAGE')
-    #if not os.path.exists(hdir):
-    #    bb.utils.mkdirhier(hdir)
-
-    #pdir = os.path.join(hdir, pn)
-    #if not os.path.exists(pdir):
-    #    bb.utils.mkdirhier(pdir)
-
-    #adir = os.path.join(pdir, "abixml")
-    #if not os.path.exists(adir):
-    #    bb.utils.mkdirhier(adir)
 
     hdir = d.getVar('BUILDHISTORY_DIR_PACKAGE')
     if not os.path.exists(hdir):
@@ -41,36 +28,24 @@ python abi_compliance_gather_abixml() {
     id = d.getVar("IMG_DIR")
     for fn in glob.iglob(id + "/**/**", recursive = True):
         if os.path.isfile(fn) and not os.path.islink(fn):
-            with open(fn, "rb") as fd:
-                exp = b"\177ELF"
-                head = fd.read(4)
-                is_elf = head == exp
-                if not is_elf:
+                if not abicheck.is_elf(fn):
                     continue
 
-                cmd = ["abidw", "--no-corpus-path", fn]
+                # If there's no error, out is the XML representation
+                ret, out, cmd = abicheck.serialize(fn)
                 bb.note(" ".join(cmd))
-                sout = subprocess.PIPE
-                serr = subprocess.STDOUT
-                shell = False
-                try:
-                    process = subprocess.Popen(cmd, stdout=sout,
-                                   stderr=serr, shell=shell)
-                    sout, serr = process.communicate()
-                    out = ''.join([out.decode('utf-8') for out in [sout, serr] if out])
-                except OSError as err:
-                    raise
-                if not 0 == process.returncode:
+                if not 0 == ret:
                     bb.error(out)
                     return                
-
                 if not out:
                     bb.warn("abidw output for {} is empty".format(fn))
                     return
 
-                r = ET.fromstring(out)
-                try:
-                    sn = r.attrib["soname"]
+                sn = abicheck.get_soname_from_xml(out)
+                if len(sn) > 0:
+                    # XXX This won't handle multiple soname within the same
+                    #     recipe. However it's half as bad as with multiple
+                    #     library versions recipe names need to be different.
                     l = sn.split(".")
                     try:
                         if 1 == len(l):
@@ -86,13 +61,14 @@ python abi_compliance_gather_abixml() {
                     except IndexError:
                         bb.warn("couldn't parse soname {}".format(sn))
                         return                
-                except (AttributeError, KeyError):
+                else:
                     out_fn =  os.path.join(adir, ".".join([os.path.basename(fn), "xml"]))
+
                 with open(out_fn, "w") as f:
                     f.write(out)
 }
 
 # Target binaries are the only interest.
-do_install[postfuncs] += "${@ "abi_compliance_gather_abixml" if ("class-target" == d.getVar("CLASSOVERRIDE")) else "" }"
-do_install[vardepsexclude] += "${@ "abi_compliance_gather_abixml" if ("class-target" == d.getVar("CLASSOVERRIDE")) else "" }"
+do_install[postfuncs] += "${@ "binary_audit_gather_abixml" if ("class-target" == d.getVar("CLASSOVERRIDE")) else "" }"
+do_install[vardepsexclude] += "${@ "binary_audit_gather_abixml" if ("class-target" == d.getVar("CLASSOVERRIDE")) else "" }"
 
