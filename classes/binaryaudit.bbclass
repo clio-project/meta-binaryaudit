@@ -1,6 +1,8 @@
 
 inherit buildhistory
 
+BUILDHISTORY_PRESERVE += "binaryaudit"
+
 BINARY_AUDIT_REFERENCE_BASEDIR ?= ""
 
 BINARY_AUDIT_IMPORTS = "abicheck"

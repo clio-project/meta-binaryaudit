@@ -2,7 +2,6 @@
 inherit binaryaudit
 
 BUILDHISTORY_FEATURES += "abicheck"
-BUILDHISTORY_PRESERVE += "abixml"
 
 DEPENDS_append_class-target = " libabigail-native"
 
