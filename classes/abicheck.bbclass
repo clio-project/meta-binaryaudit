@@ -1,5 +1,5 @@
 
-inherit buildhistory
+inherit binaryaudit
 
 BUILDHISTORY_FEATURES += "abicheck"
 BUILDHISTORY_PRESERVE += "abixml"
@@ -12,12 +12,9 @@ python binary_audit_gather_abixml() {
     import glob
     from binaryaudit import abicheck
 
-    pn = d.getVar("PN")
+    dest_basedir = binary_audit_get_create_pkg_dest_basedir(d)
 
-    hdir = d.getVar('BUILDHISTORY_DIR_PACKAGE')
-    if not os.path.exists(hdir):
-        bb.utils.mkdirhier(hdir)
-    adir = os.path.join(hdir, "abixml")
+    adir = os.path.join(dest_basedir, "abixml")
     if not os.path.exists(adir):
         bb.utils.mkdirhier(adir)
 
@@ -38,7 +35,7 @@ python binary_audit_gather_abixml() {
                     bb.error(out)
                     return                
                 if not out:
-                    bb.warn("abidw output for {} is empty".format(fn))
+                    bb.warn("Empty dump output for '{}'".format(fn))
                     return
 
                 sn = abicheck.get_soname_from_xml(out)
