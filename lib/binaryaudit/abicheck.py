@@ -30,4 +30,18 @@ def serialize(fn):
     # return cmd for logging purposes
     return process.returncode, out, cmd
 
+def compare(ref, cur):
+    cmd = ["abidiff", ref, cur]
+    sout = subprocess.PIPE
+    serr = subprocess.STDOUT
+    shell = False
+    try:
+        process = subprocess.Popen(cmd, stdout=sout,
+            stderr=serr, shell=shell)
+        sout, serr = process.communicate()
+        out = "".join([out.decode('utf-8') for out in [sout, serr] if out])
+    except OSError as err:
+        raise
+    # return cmd for logging purposes
+    return process.returncode, out, cmd
 
