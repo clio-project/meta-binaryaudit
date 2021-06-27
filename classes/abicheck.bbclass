@@ -147,16 +147,10 @@ python binary_audit_abixml_compare_to_ref() {
                 #    bb.note("bit '{}': '{}'".format(n, (ret >> n) & 1))
 
                 status_ln = " ".join(status_bits)
-                if abicheck.diff_is_error(ret) or abicheck.diff_is_incompatible_change(ret):
-                    # NOTE This is sufficient with USAGE_ERROR, ERROR bit will be set, too.
-                    bb.error("abicheck diff bits: {}".format("".join(status_ln)))
-                    bb.error("abicheck output: '{}'".format(out))
-
-                # CHANGE doesn't imply INCOMPATIBLE_CHANGE
-                if  abicheck.diff_is_change(ret) and not abicheck.diff_is_incompatible_change(ret):
-                    bb.error("abicheck diff bits: {}".format("".join(status_ln)))
-                    bb.warn("abicheck output: '{}'".format(out))
-
+                # XXX Just warn for now if there's anythnig non 0 in the status.
+                #     Should be made finer configurable through local.conf.
+                bb.warn("abicheck diff bits: {}".format("".join(status_ln)))
+                #bb.error("abicheck output: '{}'".format(out))
 }
 
 # Target binaries are the only interest.
