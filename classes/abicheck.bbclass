@@ -62,6 +62,7 @@ python binary_audit_gather_abixml() {
 
                 with open(out_fn, "w") as f:
                     f.write(out)
+                f.close()
 }
 
 # Target binaries are the only interest.
@@ -74,7 +75,8 @@ python binary_audit_abixml_compare_to_ref() {
     
     pn = d.getVar("PN")
 
-    cur_abixml_dir = os.path.join(os.path.join(d.getVar('BUILDHISTORY_DIR_PACKAGE'), "binaryaudit"), "abixml")
+    dest_basedir = binary_audit_get_create_pkg_dest_basedir(d)
+    cur_abixml_dir = os.path.join(dest_basedir, "abixml")
     if not os.path.isdir(cur_abixml_dir):
         bb.note("No ABI dump found in the current build for '{}' under '{}'".format(pn, cur_abixml_dir))
         return
@@ -87,6 +89,10 @@ python binary_audit_abixml_compare_to_ref() {
         bb.note("No binary audit reference ABI found under '{}'".format(ref_basedir))
         return
     bb.note("BINARY_AUDIT_REFERENCE_BASEDIR = \"{}\"".format(ref_basedir))
+
+    cur_abidiff_dir = os.path.join(dest_basedir, "abidiff")
+    if not os.path.exists(cur_abidiff_dir):
+        bb.utils.mkdirhier(cur_abidiff_dir)
 
     for fpath in glob.iglob("{}/packages/*/{}/**".format(ref_basedir, pn), recursive = True):
         if os.path.basename(fpath) != "binaryaudit": 
@@ -108,17 +114,44 @@ python binary_audit_abixml_compare_to_ref() {
             cur_xml_fpath = os.path.join(cur_abixml_dir, xml_fn);
             with open(cur_xml_fpath) as f:
                 xml = f.read()
+            f.close()
 
             # Care only about DSO for now
             sn = abicheck.get_soname_from_xml(xml)
+            # XXX Handle error cases, eg xml file was garbage, etc.
             if len(sn) > 0:
                 # XXX Implement suppression handling
                 ret, out, cmd = abicheck.compare(ref_xml_fpath, cur_xml_fpath)
-                # XXX Not complete yet. It's to be written out into files and
-                # the exit status is to be evaluated.
+
                 bb.note(" ".join(cmd))
-                bb.note(" exit status '{}'".format(ret))
-                bb.note("output: '{}'".format(out))
+
+                s = " ".join(abicheck.diff_get_bits(ret))
+
+                cur_status_fpath = os.path.join(cur_abidiff_dir, ".".join([os.path.splitext(xml_fn)[0], "status"]))
+                with open(cur_status_fpath, "w") as f:
+                    f.write(s)
+                f.close()
+                cur_out_fpath = os.path.join(cur_abidiff_dir, ".".join([os.path.splitext(xml_fn)[0], "out"]))
+                with open(cur_out_fpath, "w") as f:
+                    f.write(out)
+                f.close()
+
+                if abicheck.diff_is_ok(ret):
+                    return
+
+                #for n in range(8):
+                #    bb.note("bit '{}': '{}'".format(n, (ret >> n) & 1))
+
+                if abicheck.diff_is_error(ret) or abicheck.diff_is_incompatible_change(ret):
+                    # NOTE This is sufficient with USAGE_ERROR, ERROR bit will be set, too.
+                    bb.error("abicheck diff bits: {}".format(s))
+                    bb.error("abicheck output: '{}'".format(out))
+
+                # CHANGE doesn't imply INCOMPATIBLE_CHANGE
+                if  abicheck.diff_is_change(ret) and not abicheck.diff_is_incompatible_change(ret):
+                    bb.warn("abicheck diff bits: {}".format(s))
+                    bb.warn("abicheck output: '{}'".format(out))
+
 }
 
 # Target binaries are the only interest.
