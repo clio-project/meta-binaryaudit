@@ -62,7 +62,7 @@ python binary_audit_gather_abixml() {
 
                 with open(out_fn, "w") as f:
                     f.write(out)
-                f.close()
+                    f.close()
 }
 
 # Target binaries are the only interest.
@@ -114,7 +114,7 @@ python binary_audit_abixml_compare_to_ref() {
             cur_xml_fpath = os.path.join(cur_abixml_dir, xml_fn);
             with open(cur_xml_fpath) as f:
                 xml = f.read()
-            f.close()
+                f.close()
 
             # Care only about DSO for now
             sn = abicheck.get_soname_from_xml(xml)
@@ -125,16 +125,20 @@ python binary_audit_abixml_compare_to_ref() {
 
                 bb.note(" ".join(cmd))
 
-                s = " ".join(abicheck.diff_get_bits(ret))
+                status_bits = abicheck.diff_get_bits(ret)
 
                 cur_status_fpath = os.path.join(cur_abidiff_dir, ".".join([os.path.splitext(xml_fn)[0], "status"]))
                 with open(cur_status_fpath, "w") as f:
-                    f.write(s)
-                f.close()
+                    k = 0
+                    while k + 1 < len(status_bits):
+                        f.write(status_bits[k] + "\n")
+                        k = k + 1
+                    f.write(status_bits[k])
+                    f.close()
                 cur_out_fpath = os.path.join(cur_abidiff_dir, ".".join([os.path.splitext(xml_fn)[0], "out"]))
                 with open(cur_out_fpath, "w") as f:
                     f.write(out)
-                f.close()
+                    f.close()
 
                 if abicheck.diff_is_ok(ret):
                     return
@@ -142,14 +146,15 @@ python binary_audit_abixml_compare_to_ref() {
                 #for n in range(8):
                 #    bb.note("bit '{}': '{}'".format(n, (ret >> n) & 1))
 
+                status_ln = " ".join(status_bits)
                 if abicheck.diff_is_error(ret) or abicheck.diff_is_incompatible_change(ret):
                     # NOTE This is sufficient with USAGE_ERROR, ERROR bit will be set, too.
-                    bb.error("abicheck diff bits: {}".format(s))
+                    bb.error("abicheck diff bits: {}".format("".join(status_ln)))
                     bb.error("abicheck output: '{}'".format(out))
 
                 # CHANGE doesn't imply INCOMPATIBLE_CHANGE
                 if  abicheck.diff_is_change(ret) and not abicheck.diff_is_incompatible_change(ret):
-                    bb.warn("abicheck diff bits: {}".format(s))
+                    bb.error("abicheck diff bits: {}".format("".join(status_ln)))
                     bb.warn("abicheck output: '{}'".format(out))
 
 }
