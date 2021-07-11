@@ -29,5 +29,7 @@ PACKAGECONFIG[bash-completion] = "--enable-bash-completion,--disable-bash-comple
 PACKAGECONFIG[fedabipkgdiff] = "--enable-fedabipkgdiff,--disable-fedabipkgdiff,fedabipkgdiff"
 PACKAGECONFIG[python3] = "--enable-python3,--disable-python3,python3"
 
+RDEPENDS_${PN} += "${@bb.utils.contains('PACKAGECONFIG', 'python3', 'python3', '', d)}"
+
 BBCLASSEXTEND = "native nativesdk"
 
