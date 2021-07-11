@@ -10,8 +10,6 @@ LIC_FILES_CHKSUM = " \
     file://COPYING;md5=2b3c1a10dd8e84f2db03cb00825bcf95 \
 "
 
-abi_compliance_gather[noexec] = "1"
-
 DEPENDS += "elfutils libxml2"
 
 S = "${WORKDIR}/libabigail-${PV}"
