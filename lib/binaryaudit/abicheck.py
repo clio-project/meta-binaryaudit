@@ -2,6 +2,7 @@
 import subprocess
 from xml.etree import ElementTree
 
+
 def is_elf(fn):
     with open(fn, "rb") as fd:
         exp = b"\177ELF"
