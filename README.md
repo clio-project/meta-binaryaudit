@@ -18,5 +18,5 @@ creationg and further usage of the ABI related data. In `local.conf`, add the fo
 The serialized ABI representation will be integrated into the build history. Saving the build history will allow to compare the current build
 with a baseline ABI data from a previous build. This requires the variable below to be set to a buildhistory directory to be taken as a baseline:
 
-BINARY_AUDIT_REFERENCE_BASEDIR = "/path/to/buildhistory.baseline"
+`BINARY_AUDIT_REFERENCE_BASEDIR = "/path/to/buildhistory.baseline"`
 
