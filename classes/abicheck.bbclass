@@ -9,7 +9,6 @@ IMG_DIR="${WORKDIR}/image"
 
 python binary_audit_gather_abixml() {
     import glob, os
-    from binaryaudit import util
     from binaryaudit import abicheck
     
 
@@ -25,7 +24,10 @@ python binary_audit_gather_abixml() {
 
     id = d.getVar("IMG_DIR")
     
-    build_all_xml(adir, id)
+    for out, out_fn in abicheck.serialize_artifacts(adir, id):
+        with open(out_fn, "w") as f:
+            f.write(out)
+            f.close()
 
 }
 
