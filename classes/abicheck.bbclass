@@ -15,23 +15,22 @@ python binary_audit_gather_abixml() {
 
     dest_basedir = binary_audit_get_create_pkg_dest_basedir(d)
 
-    adir = os.path.join(dest_basedir, "abixml")
-    if not os.path.exists(adir):
-        bb.utils.mkdirhier(adir)
+    abixml_dir = os.path.join(dest_basedir, "abixml")
+    if not os.path.exists(abixml_dir):
+        bb.utils.mkdirhier(abixml_dir)
 
-    for item in os.listdir(adir):
-        itempath = os.path.join(adir, item)
+    for item in os.listdir(abixml_dir):
+        itempath = os.path.join(abixml_dir, item)
         os.unlink(itempath)
 
-    id = d.getVar("IMG_DIR")
-    
-    for out, out_fn in abicheck.serialize_artifacts(adir, id):
+    artifact_dir = d.getVar("IMG_DIR")
+    for out, out_fn in abicheck.serialize_artifacts(abixml_dir, artifact_dir):
         with open(out_fn, "w") as f:
             f.write(out)
             f.close()
 
     t1 = time.monotonic()
-    duration_fl = adir + ".duration"
+    duration_fl = abixml_dir + ".duration"
     bb.note("binary_audit_gather_abixml: start={}, end={}, duration={}".format(t0, t1, t1 - t0))
     with open(duration_fl, "w") as f:
         f.write(u"{}".format(t1 - t0))
