@@ -8,9 +8,10 @@ DEPENDS_append_class-target = " libabigail-native"
 IMG_DIR="${WORKDIR}/image"
 
 python binary_audit_gather_abixml() {
-    import glob, os
+    import glob, os, time
     from binaryaudit import abicheck
-    
+
+    t0 = time.monotonic()
 
     dest_basedir = binary_audit_get_create_pkg_dest_basedir(d)
 
@@ -29,6 +30,12 @@ python binary_audit_gather_abixml() {
             f.write(out)
             f.close()
 
+    t1 = time.monotonic()
+    duration_fl = adir + ".duration"
+    bb.note("binary_audit_gather_abixml: start={}, end={}, duration={}".format(t0, t1, t1 - t0))
+    with open(duration_fl, "w") as f:
+        f.write(u"{}".format(t1 - t0))
+        f.close()
 }
 
 # Target binaries are the only interest.
@@ -36,9 +43,11 @@ do_install[postfuncs] += "${@ "binary_audit_gather_abixml" if ("class-target" ==
 do_install[vardepsexclude] += "${@ "binary_audit_gather_abixml" if ("class-target" == d.getVar("CLASSOVERRIDE")) else "" }"
 
 python binary_audit_abixml_compare_to_ref() {
-    import glob, os
+    import glob, os, time
     from binaryaudit import util
     from binaryaudit import abicheck
+
+    t0 = time.monotonic()
 
     pn = d.getVar("PN")
 
@@ -108,7 +117,7 @@ python binary_audit_abixml_compare_to_ref() {
                     f.close()
 
                 if abicheck.diff_is_ok(ret):
-                    return
+                    continue
 
                 #for n in range(8):
                 #    bb.note("bit '{}': '{}'".format(n, (ret >> n) & 1))
@@ -116,8 +125,15 @@ python binary_audit_abixml_compare_to_ref() {
                 status_ln = " ".join(status_bits)
                 # XXX Just warn for now if there's anythnig non 0 in the status.
                 #     Should be made finer configurable through local.conf.
-                util.warn("abicheck diff bits: {}".format("".join(status_ln)))
+                util.warn("abicheck: {} diff bits: {}".format(sn, "".join(status_ln)))
                 #bb.error("abicheck output: '{}'".format(out))
+
+    t1 = time.monotonic()
+    duration_fl = cur_abidiff_dir + ".duration"
+    bb.note("binary_audit_abixml_compare_to_ref: start={}, end={}, duration={}".format(t0, t1, t1 - t0))
+    with open(duration_fl, "w") as f:
+        f.write(u"{}".format(t1 - t0))
+        f.close()
 }
 
 # Target binaries are the only interest.
