@@ -51,7 +51,7 @@ python binary_audit_abixml_compare_to_ref() {
 
     pn = d.getVar("PN")
     try:
-        suppr = d.getVar("GLOBAL_SUPPRESSION_FILE")
+        suppr = d.getVar("GLOBAL_SUPPRESSION_FILE").split(", ")
     except:
         util.note("getVar exception raised")
         suppr = []
