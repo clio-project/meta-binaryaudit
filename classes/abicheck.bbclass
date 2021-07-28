@@ -51,6 +51,9 @@ python binary_audit_abixml_compare_to_ref() {
 
     pn = d.getVar("PN")
     
+    util.note("FILESPATH {}".format(d.getVar("FILESPATH")))
+    util.note("FILESEXTRAPATHS {}".format(d.getVar("FILESEXTRAPATHS")))
+    
     try:
         suppr = [d.getVar("GLOBAL_SUPPRESSION_FILE")]
     except:
