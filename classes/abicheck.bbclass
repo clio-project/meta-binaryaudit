@@ -50,8 +50,11 @@ python binary_audit_abixml_compare_to_ref() {
     t0 = time.monotonic()
 
     pn = d.getVar("PN")
-    
-    suppr = [d.getVar("GLOBAL_SUPPRESSION_FILE")]
+    try:
+        suppr = d.getVar("GLOBAL_SUPPRESSION_FILE")
+    except:
+        util.note("getVar exception raised")
+        suppr = []
 
     dest_basedir = binary_audit_get_create_pkg_dest_basedir(d)
     cur_abixml_dir = os.path.join(dest_basedir, "abixml")
