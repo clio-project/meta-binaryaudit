@@ -54,7 +54,7 @@ python binary_audit_abixml_compare_to_ref() {
     util.note("FILESPATH {}".format(d.getVar("FILESPATH")))
     
     util.note("WORKDIR {}".format(d.getVar("WORKDIR")))
-    recipe_suppr = d.getVar("WORKDIR")[:-1] + "/test_recipe.suppr"
+    recipe_suppr = d.getVar("WORKDIR") + "/test_recipe.suppr"
     util.note("RECIPE SUPPRESSION: {}".format(recipe_suppr))
     util.note(str(os.path.isfile(recipe_suppr)))
     
