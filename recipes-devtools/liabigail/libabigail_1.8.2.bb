@@ -4,6 +4,9 @@ LICENSE = "LGPLv3"
 SECTION = "devel"
 
 SHA512SUM="fa8edaf39632e26430481f15e962a098459eac087074e85ca055293ba324ec5944c45880fcb36f1c54a64652605a439cbf9247dfea9bfd3ec502cc7292dd1c8d"
+SRC_URI[md5sum] = "bd8509b286ff39fe82107a3847ee9f39"
+SRC_URI[sha256sum] = "86347c9f0a8666f263fd63f8c3fe4c4f9cb1bdb3ec4260ecbaf117d137e89787"
+
 SRC_URI = "https://mirrors.kernel.org/sourceware/libabigail/libabigail-${PV}.tar.gz;sha512sum=${SHA512SUM}"
 
 LIC_FILES_CHKSUM = " \

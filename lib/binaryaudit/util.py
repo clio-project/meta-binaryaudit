@@ -52,7 +52,7 @@ def _error(*args):
 
 
 def _fatal(*args):
-    this.logger.critical("".join(args))
+    this.logger.fatal("".join(args))
 
 
 def _debug(*args):
@@ -60,8 +60,7 @@ def _debug(*args):
 
 
 def create_logger(name="binaryaudit"):
-    if None is this.logger:
-        logger = logger_wrapper(name)
+    logger = logger_wrapper(name)
     return logger
 
 
