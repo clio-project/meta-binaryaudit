@@ -51,13 +51,10 @@ python binary_audit_abixml_compare_to_ref() {
 
     pn = d.getVar("PN")
     
-    util.note("FILESPATH {}".format(d.getVar("FILESPATH")))
-    
-    util.note("WORKDIR {}".format(d.getVar("WORKDIR")))
-    recipe_suppr = d.getVar("WORKDIR") + "/*_recipe.suppr"
+ 
+    recipe_suppr = d.getVar("WORKDIR") + "/abi*.suppr"
     
     suppr = glob.glob(recipe_suppr)
-    util.note("RECIPE SUPPRESSION: ".format(str(suppr)))
 
     if os.path.isfile(str(d.getVar("GLOBAL_SUPPRESSION_FILE"))):
         suppr += [d.getVar("GLOBAL_SUPPRESSION_FILE")]
