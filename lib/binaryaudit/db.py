@@ -149,7 +149,7 @@ class wrapper:
         session = self._acquire_session()
         record = (
                 session.query(
-                    self.binaryaudit_checker_baseline_tb
+                    self.binaryaudit_checker_baseline_tbl
                 ).filter_by(
                     ProductID=product_id,
                 ).order_by(desc("DateCreated"))
