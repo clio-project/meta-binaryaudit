@@ -49,6 +49,19 @@ python binary_audit_abixml_compare_to_ref() {
     t0 = time.monotonic()
 
     pn = d.getVar("PN")
+    
+ 
+    recipe_suppr = d.getVar("WORKDIR") + "/abi*.suppr"
+    
+    suppr = glob.glob(recipe_suppr)
+
+    if os.path.isfile(str(d.getVar("GLOBAL_SUPPRESSION_FILE"))):
+        suppr += [d.getVar("GLOBAL_SUPPRESSION_FILE")]
+    else:
+        util.note("No global suppression found")
+        
+    util.note("SUPPRESSION FILES: {}".format(str(suppr)))
+
 
     dest_basedir = binary_audit_get_create_pkg_dest_basedir(d)
     cur_abixml_dir = os.path.join(dest_basedir, "abixml")
@@ -96,7 +109,7 @@ python binary_audit_abixml_compare_to_ref() {
             # XXX Handle error cases, eg xml file was garbage, etc.
             if len(sn) > 0:
                 # XXX Implement suppression handling
-                ret, out, cmd = abicheck.compare(ref_xml_fpath, cur_xml_fpath)
+                ret, out, cmd = abicheck.compare(ref_xml_fpath, cur_xml_fpath, suppr)
 
                 util.note(" ".join(cmd))
 
