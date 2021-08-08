@@ -27,6 +27,8 @@ class ba_orchestrator:
 
     def get_product_id(self) -> None:
         '''
+        initialize the Product ID based on the entities
+        assigns existing Product ID or new Product ID
         '''
         if self.db_conn.is_db_connected:
             self.product_id = self.db_conn.get_product_id(
@@ -36,3 +38,30 @@ class ba_orchestrator:
             self.logger.note("Product_id: %s" % self.product_id)
         else:
             self.logger.debug("Not connected")
+
+    def perform_binary_audit(self, buildurl, logurl) -> None:
+        '''
+        inserts product and build id into db
+        calls mariner model test and waits for test result
+        updates db to record the test result
+        '''
+        if self.db_conn.is_db_connected:
+            self.db_conn.insert_main_transaction(
+                    self.build_id,
+                    self.product_id,
+                    buildurl,
+                    logurl
+            )
+        else:
+            self.logger.debug("Not connected")
+        # call mariner model
+        # wait for test result
+        # model = run_command()
+        # result = model.popen_output
+        # if self.db_conn.is_db_connected:
+        #    self.db_conn.update_test_result(
+        #             self.build_id,
+        #             result
+        #     )
+        # else:
+        #     self.logger.debug("Not connected")

@@ -6,8 +6,14 @@ from sqlalchemy.ext.automap import automap_base
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.sql import func
 from sqlalchemy import desc
-
 from envparse import env
+from datetime import datetime
+
+TRANSACTION_MAIN_RESULT_FAILED = "FAILED"
+TRANSACTION_MAIN_RESULT_PASSED = "PASSED"
+TRANSACTION_MAIN_RESULT_PENDING = "PENDING"
+
+VERSION_NOT_AVAILABLE = "n/a"
 
 
 class wrapper:
@@ -82,6 +88,7 @@ class wrapper:
 
     def is_db_connected(self) -> bool:
         '''
+        checks database connection
         '''
         if self._session:
             return True
@@ -89,6 +96,8 @@ class wrapper:
 
     def get_product_id(self, productname, derivativename) -> int:
         '''
+        verifies that the object exists if not, inserts the new object
+        and returns the object's Product ID
         '''
         product_id = 0
 
@@ -121,31 +130,83 @@ class wrapper:
 
         return product_id
 
-    def add_transaction(self, build_id, product_id, baseline_id, build_url, log_url, result):
+    def insert_main_transaction(self, build_id, product_id, buildurl="", logurl="",
+                                result=TRANSACTION_MAIN_RESULT_PENDING, baseline_id=None) -> None:
+        '''
+        inserts new object to the [main table]
+        '''
         session = self._acquire_session()
-        session.add(self.binaryaudit_transaction_main_tbl(
-                BuildID=build_id,
-                ProductID=product_id,
-                BaselineID=baseline_id,
-                BuildUrl=build_url,
-                LogUrl=log_url,
-                Result=result))
-        session.commit()
-        self._release_session(session)
+        date = datetime.utcnow()
+        new_tbl_entry = self.binaryaudit_transaction_main_tbl(
+                        BuildID=build_id,
+                        DateTimeUTC=date,
+                        ProductID=product_id,
+                        BaselineID=baseline_id,
+                        BuildUrl=buildurl,
+                        LogUrl=logurl,
+                        Result=result
+        )
+        session.add(new_tbl_entry)
+        self._flush_session(session)
 
-    def add_baseline(self, build_id, product_id, data, dt=None):
+    def insert_ba_baseline_data(self, build_id, product_id, pkg_data, date=None) -> None:
+        '''
+        inserts new object to the [baseline table]
+        '''
+        if not date:
+            date = func.now()
         session = self._acquire_session()
-        if not dt:
-            dt = func.now()
-        session.add(self.binaryaudit_checker_baseline_tbl(
-                ProductID=product_id,
-                BuildID=build_id,
-                PackageData=data,
-                DateCreated=dt))
-        session.commit()
-        self._release_session(session)
+        new_tbl_entry = self.binaryaudit_checker_baseline_tbl(
+                        BuildID=build_id,
+                        ProductID=product_id,
+                        PackageData=pkg_data,
+                        DateCreated=date
 
-    def get_latest_baseline(self, product_id):
+        )
+        session.add(new_tbl_entry)
+        self._flush_session(session)
+
+    def insert_ba_transaction_details(self,
+                                      build_id,
+                                      item_name,
+                                      base_version,
+                                      new_version,
+                                      exec_time,
+                                      result,
+                                      res_details) -> None:
+        '''
+        inserts new object to the [details table]
+        '''
+        session = self._acquire_session()
+        date = datetime.utcnow()
+        new_tbl_entry = self.binaryaudit_abi_checker_transaction_details_tbl(
+                        DateTimeUTC=date,
+                        BuildID=build_id,
+                        ItemName=item_name,
+                        BaseVersion=base_version,
+                        NewVersion=new_version,
+                        ExecTimeInMicroSec=exec_time,
+                        Result=result,
+                        ResultDetails=res_details
+
+        )
+        session.add(new_tbl_entry)
+        self._flush_session(session)
+
+    def update_ba_test_result(self, build_id, result) -> None:
+        '''
+        locates object with corresponding Build ID in the [main table]
+        updates the object's Result entity with test outcome
+        '''
+        session = self._acquire_session()
+        entry = session.query(self.binaryaudit_transaction_main_tbl).get(build_id)
+        entry.Result = result
+        self._flush_session(session)
+
+    def get_ba_latest_baseline(self, product_id):
+        '''
+        locates and returns the latest baseline object data
+        '''
         session = self._acquire_session()
         record = (
                 session.query(
@@ -156,4 +217,4 @@ class wrapper:
                 .first())
         self._release_session(session)
 
-        return record.BuildID, record.PackageData
+        return record.ID, record.PackageData
