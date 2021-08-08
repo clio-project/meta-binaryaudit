@@ -19,7 +19,9 @@ S = "${WORKDIR}/libabigail-${PV}"
 
 inherit autotools pkgconfig
 
-PACKAGECONFIG ??= "rpm python3"
+PACKAGECONFIG ??= "${@bb.utils.contains('PACKAGE_CLASSES', 'package_rpm', 'rpm', '', d)} \
+                   ${@bb.utils.contains('PACKAGE_CLASSES', 'package_deb', 'deb', '', d)} \
+                   tar python3"
 PACKAGECONFIG[rpm] = "--enable-rpm,--disable-rpm,rpm"
 PACKAGECONFIG[deb] = "--enable-deb,--disable-deb,deb"
 PACKAGECONFIG[tar] = "--enable-tar,--disable-tar,tar"
@@ -31,6 +33,7 @@ PACKAGECONFIG[fedabipkgdiff] = "--enable-fedabipkgdiff,--disable-fedabipkgdiff,f
 PACKAGECONFIG[python3] = "--enable-python3,--disable-python3,python3"
 
 RDEPENDS_${PN} += "${@bb.utils.contains('PACKAGECONFIG', 'python3', 'python3', '', d)}"
+RDEPENDS_${PN} += "${@bb.utils.contains('PACKAGECONFIG', 'deb', 'dpkg', '', d)}"
 
 BBCLASSEXTEND = "native nativesdk"
 
