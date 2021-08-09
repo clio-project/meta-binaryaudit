@@ -23,11 +23,23 @@ python binary_audit_gather_abixml() {
         itempath = os.path.join(abixml_dir, item)
         os.unlink(itempath)
 
+    kv = d.getVar("KERNEL_VERSION")
     artifact_dir = d.getVar("IMG_DIR")
-    for out, out_fn in abicheck.serialize_artifacts(abixml_dir, artifact_dir):
+    ltree = os.path.join(artifact_dir, "usr", "lib", "modules")
+    if kv and os.path.isdir(ltree):
+        # XXX This vmlinux lookup method is very vague
+        ptr = os.path.join(d.getVar("WORKDIR"), "..", "..", d.getVar("PREFERRED_PROVIDER_virtual/kernel"), "*", "*", "vmlinux")
+        vmlinux = glob.glob(ptr)[0]
+        whitelist = None
+        out, out_fn = abicheck.serialize_kernel_artifacts(abixml_dir, ltree, vmlinux, whitelist)
         with open(out_fn, "w") as f:
             f.write(out)
             f.close()
+    else:
+        for out, out_fn in abicheck.serialize_artifacts(abixml_dir, artifact_dir):
+            with open(out_fn, "w") as f:
+                f.write(out)
+                f.close()
 
     t1 = time.monotonic()
     duration_fl = abixml_dir + ".duration"
