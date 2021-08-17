@@ -9,7 +9,9 @@ Yocto layer for ELF binary compliance validation.
 
 # ABI compliance
 
-The ABI compliance mechanism relies on [libabigail](https://sourceware.org/git/?p=libabigail.git). The included libabigail recipe 
+The ABI compliance mechanism relies on [libabigail](https://sourceware.org/git/?p=libabigail.git).
+
+The included libabigail recipe is configurable the usual way through [PACKAGECONFIG](https://www.yoctoproject.org/docs/3.1/ref-manual/ref-manual.html#var-PACKAGECONFIG). Several features will be turned on automatically depending on the build configuration. To see all the configuration options please inspect the recipe.
 
 ## ABI serialization
 
