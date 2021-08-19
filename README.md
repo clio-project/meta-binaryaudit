@@ -36,7 +36,7 @@ An ABI [suppression specification file](https://sourceware.org/libabigail/manual
 
 In order to add a global suppression file, modify the variable `GLOBAL_SUPPRESSION_FILE` in `local.conf` to be the suppression's filepath:
 
-`GLOBAL_SUPRESSION_FILE = "/path/to/suppression.file"`
+`BINARY_AUDIT_GLOBAL_SUPPRESSION_FILE = "/path/to/suppression.file"`
 
 To add recipe-specific suppressions, add the filepath to the suppression to the recipe's `SRC_URI` list. The suppression file must also have a name which follows the regex `abi*.suppr`. Here is an example for adding a suppression called `abi_openssl.suppr` to the `openssl` recipe:
 
