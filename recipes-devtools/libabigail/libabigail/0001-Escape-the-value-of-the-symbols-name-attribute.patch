@@ -1,0 +1,30 @@
+From 14ab99549fca49540330136326ed844b0dcd9958 Mon Sep 17 00:00:00 2001
+From: Pavel Zhukov <pavel.zhukov@huawei.com>
+Date: Tue, 11 Jan 2022 14:06:01 +0100
+Subject: [PATCH] Escape the value of the symbols name attribute
+Cc: pavel@zhukoff.net
+
+Symbols name may include < and > characters (go-runtime is an example)
+which causes xml parsers to fail.
+
+Signed-off-by: Pavel Zhukov <pavel.zhukov@huawei.com>
+---
+ src/abg-writer.cc | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/src/abg-writer.cc b/src/abg-writer.cc
+index 76ce809b..e2239e01 100644
+--- a/src/abg-writer.cc
++++ b/src/abg-writer.cc
+@@ -3111,7 +3111,7 @@ write_elf_symbol(const elf_symbol_sptr&	sym,
+ 
+   annotate(sym, ctxt, indent);
+   do_indent(o, indent);
+-  o << "<elf-symbol name='" << sym->get_name() << "'";
++  o << "<elf-symbol name='" << xml::escape_xml_string(sym->get_name()) << "'";
+   if (sym->is_variable() && sym->get_size())
+   o << " size='" << sym->get_size() << "'";
+ 
+-- 
+2.34.1
+
