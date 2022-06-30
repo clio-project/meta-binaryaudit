@@ -3,14 +3,14 @@ HOMEPAGE = "https://sourceware.org/libabigail"
 LICENSE = "LGPLv3"
 SECTION = "devel"
 
-SHA512SUM="fa8edaf39632e26430481f15e962a098459eac087074e85ca055293ba324ec5944c45880fcb36f1c54a64652605a439cbf9247dfea9bfd3ec502cc7292dd1c8d"
-SRC_URI[md5sum] = "bd8509b286ff39fe82107a3847ee9f39"
-SRC_URI[sha256sum] = "86347c9f0a8666f263fd63f8c3fe4c4f9cb1bdb3ec4260ecbaf117d137e89787"
+SHA512SUM="288f63f3495f0cd38258c50b78f30a573e43ab60494fefa22c8cba6d6776c5f94742ffea26297a232b78d25f6804f1b3f51febd59ec487733e6ef683cef2c180"
+SRC_URI[md5sum] = "3972df59e3b85ad157f219c9df547fca"
+SRC_URI[sha256sum] = "3704ae97a56bf076ca08fb5dea6b21db998fbbf14c4f9de12824b78db53b6fda"
 
 SRC_URI = "https://mirrors.kernel.org/sourceware/libabigail/libabigail-${PV}.tar.gz;sha512sum=${SHA512SUM}"
 
 LIC_FILES_CHKSUM = " \
-    file://COPYING;md5=2b3c1a10dd8e84f2db03cb00825bcf95 \
+    file://LICENSE.txt;md5=0bcd48c3bdfef0c9d9fd17726e4b7dab \
 "
 
 DEPENDS += "elfutils libxml2"
@@ -25,7 +25,6 @@ PACKAGECONFIG ??= "${@bb.utils.contains('PACKAGE_CLASSES', 'package_rpm', 'rpm',
 PACKAGECONFIG[rpm] = "--enable-rpm,--disable-rpm,rpm"
 PACKAGECONFIG[deb] = "--enable-deb,--disable-deb,deb"
 PACKAGECONFIG[tar] = "--enable-tar,--disable-tar,tar"
-PACKAGECONFIG[zip-archive] = "--enable-zip-archive,--disable-zip-archive,zip-archive"
 PACKAGECONFIG[apidoc] = "--enable-apidoc,--disable-apidoc,apidoc"
 PACKAGECONFIG[manual] = "--enable-manual,--disable-manual,manual"
 PACKAGECONFIG[bash-completion] = "--enable-bash-completion,--disable-bash-completion,bash-completion"
