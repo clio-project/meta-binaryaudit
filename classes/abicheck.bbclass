@@ -1,5 +1,6 @@
 
 inherit binaryaudit
+inherit insane
 
 BUILDHISTORY_FEATURES += "abicheck"
 
@@ -53,7 +54,8 @@ python binary_audit_gather_abixml() {
 do_install[postfuncs] += "${@ "binary_audit_gather_abixml" if ("class-target" == d.getVar("CLASSOVERRIDE")) else "" }"
 do_install[vardepsexclude] += "${@ "binary_audit_gather_abixml" if ("class-target" == d.getVar("CLASSOVERRIDE")) else "" }"
 
-python binary_audit_abixml_compare_to_ref() {
+QAPATHTEST[abi-changed] = "package_qa_binary_audit_abixml_compare_to_ref"
+def package_qa_binary_audit_abixml_compare_to_ref(file, name, d, elf, messages):
     import glob, os, time
     from binaryaudit import util
     from binaryaudit import abicheck
@@ -61,8 +63,8 @@ python binary_audit_abixml_compare_to_ref() {
     t0 = time.monotonic()
 
     pn = d.getVar("PN")
+
     
- 
     recipe_suppr = d.getVar("WORKDIR") + "/abi*.suppr"
     
     suppr = glob.glob(recipe_suppr)
@@ -149,8 +151,7 @@ python binary_audit_abixml_compare_to_ref() {
                 status_ln = " ".join(status_bits)
                 # XXX Just warn for now if there's anythnig non 0 in the status.
                 #     Should be made finer configurable through local.conf.
-                util.warn("abicheck: {} diff bits: {}".format(sn, "".join(status_ln)))
-                #bb.error("abicheck output: '{}'".format(out))
+                util.add_message(messages, "abi-changed", "%s: {} diff bits: {}" % (name, sn, out))
 
     t1 = time.monotonic()
     duration_fl = cur_abidiff_dir + ".duration"
@@ -158,8 +159,4 @@ python binary_audit_abixml_compare_to_ref() {
     with open(duration_fl, "w") as f:
         f.write(u"{}".format(t1 - t0))
         f.close()
-}
 
-# Target binaries are the only interest.
-do_install[postfuncs] += "${@ "binary_audit_abixml_compare_to_ref" if ("class-target" == d.getVar("CLASSOVERRIDE")) else "" }"
-do_install[vardepsexclude] += "${@ "binary_audit_abixml_compare_to_ref" if ("class-target" == d.getVar("CLASSOVERRIDE")) else "" }"
