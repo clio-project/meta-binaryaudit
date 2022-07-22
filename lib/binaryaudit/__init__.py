@@ -1,15 +1,11 @@
 from . import util
-
 try:
     # Reverence Poky
     import bb
-
     util.debug = bb.debug  # noqa: F821
     util.note = bb.note  # noqa: F821
     util.warn = bb.warn  # noqa: F821
     util.error = bb.error  # noqa: F821
     util.fatal = bb.fatal  # noqa: F821
-except BaseException as e:
+except BaseException:
     util.setup_log()
-    util.warn("cannot initialize bitbake logger, using basic logger instead: ",
-              str(e))
