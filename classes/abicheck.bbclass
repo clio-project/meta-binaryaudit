@@ -151,7 +151,10 @@ def package_qa_binary_audit_abixml_compare_to_ref(file, name, d, elf, messages):
                 status_ln = " ".join(status_bits)
                 # XXX Just warn for now if there's anythnig non 0 in the status.
                 #     Should be made finer configurable through local.conf.
-                util.add_message(messages, "abi-changed", "%s: {} diff bits: {}" % (name, sn, out))
+                util.add_message(messages, 'abi-changed',
+                                '%s: ABI changed from reference build, logs: %s'
+                                % (name, out))
+
 
     t1 = time.monotonic()
     duration_fl = cur_abidiff_dir + ".duration"
