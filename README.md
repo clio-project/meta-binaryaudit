@@ -15,16 +15,16 @@ The included libabigail recipe is configurable the usual way through [PACKAGECON
 
 ## ABI serialization
 
-The ABI check can be activated by appending the `abicheck` bbclass to the bbclass inherit list. The class will attach several function calls to the recipe `install` tasks, in order to handle creation and further usage of the ABI related data. In `local.conf`, the following is to be added:
+The ABI check can be activated by appending the `abicheck` bbclass to the bbclass inherit list. The class will attach several function calls to the recipe `install` tasks, in order to handle creation and further usage of the ABI related data. In your `local.conf`, add the following:
 
 ```bitbake
 INHERIT += "abicheck"
 ```
 
-With the class inherited, the serialized ABI representation will be integrated into the build history. Saving the build history will allow to compare the current build
+With the class inherited, the serialized ABI representation will be integrated into the build history. Saving the build history will allow us to compare the current build
 with a baseline ABI data from a previous build.
 
-After your first build to collect baseline data, set the variable below to be set to the buildhistory directory to be taken as a baseline:
+After your first build to collect baseline data, set the variable below to the buildhistory directory, which we now take as a baseline:
 
 ```bitbake
 BINARY_AUDIT_REFERENCE_BASEDIR = "/path/to/buildhistory.baseline"
