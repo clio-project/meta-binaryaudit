@@ -69,8 +69,8 @@ def package_qa_binary_audit_abixml_compare_to_ref(file, name, d, elf, messages):
     
     suppr = glob.glob(recipe_suppr)
 
-    if os.path.isfile(str(d.getVar("GLOBAL_SUPPRESSION_FILE"))):
-        suppr += [d.getVar("GLOBAL_SUPPRESSION_FILE")]
+    if os.path.isfile(str(d.getVar("BINARY_AUDIT_GLOBAL_SUPPRESSION_FILE"))):
+        suppr += [d.getVar("BINARY_AUDIT_GLOBAL_SUPPRESSION_FILE")]
     else:
         util.note("No global suppression found")
         
