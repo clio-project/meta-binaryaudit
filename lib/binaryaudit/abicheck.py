@@ -1,9 +1,10 @@
 import json
 import os
 import subprocess
-from binaryaudit import run
-from xml.etree import ElementTree
 import glob
+from xml.etree import ElementTree
+
+from binaryaudit import run
 from binaryaudit import util
 
 
