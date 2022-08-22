@@ -54,19 +54,16 @@ python binary_audit_gather_abixml() {
 do_install[postfuncs] += "${@ "binary_audit_gather_abixml" if ("class-target" == d.getVar("CLASSOVERRIDE")) else "" }"
 do_install[vardepsexclude] += "${@ "binary_audit_gather_abixml" if ("class-target" == d.getVar("CLASSOVERRIDE")) else "" }"
 
-QAPATHTEST[abi-changed] = "package_qa_binary_audit_abixml_compare_to_ref"
-def package_qa_binary_audit_abixml_compare_to_ref(file, name, d, elf, messages):
+QARECIPETEST[abi-changed] = "package_qa_binary_audit_abixml_compare_to_ref"
+def package_qa_binary_audit_abixml_compare_to_ref(pn, d, messages):
     import glob, os, time
     from binaryaudit import util
     from binaryaudit import abicheck
 
     t0 = time.monotonic()
-
-    pn = d.getVar("PN")
-
     
     recipe_suppr = d.getVar("WORKDIR") + "/abi*.suppr"
-    
+
     suppr = glob.glob(recipe_suppr)
 
     if os.path.isfile(str(d.getVar("BINARY_AUDIT_GLOBAL_SUPPRESSION_FILE"))):
@@ -96,10 +93,8 @@ def package_qa_binary_audit_abixml_compare_to_ref(file, name, d, elf, messages):
     if not os.path.exists(cur_abidiff_dir):
         bb.utils.mkdirhier(cur_abidiff_dir)
 
-    for fpath in glob.iglob("{}/packages/*/{}/**".format(ref_basedir, pn), recursive = True):
-        if os.path.basename(fpath) != "binaryaudit": 
-            continue
 
+    for fpath in glob.iglob("{}/packages/*/**/{}/binaryaudit".format(ref_basedir, pn), recursive = True):
         ref_abixml_dir = os.path.join(fpath, "abixml")
         if not os.path.isdir(ref_abixml_dir):
             util.note("No ABI reference found for '{}' under '{}'".format(pn, ref_abixml_dir))
@@ -108,6 +103,9 @@ def package_qa_binary_audit_abixml_compare_to_ref(file, name, d, elf, messages):
         # A correct reference history dir for this package is found, proceed
         # to see if there's something to compare
         for xml_fn in os.listdir(cur_abixml_dir):
+            if not xml_fn.endswith('xml'):
+                continue
+
             ref_xml_fpath = os.path.join(ref_abixml_dir, xml_fn)
             if not os.path.isfile(ref_xml_fpath):
                 util.note("File '{}' is not present in the reference ABI dump".format(xml_fn))
@@ -153,7 +151,7 @@ def package_qa_binary_audit_abixml_compare_to_ref(file, name, d, elf, messages):
                 #     Should be made finer configurable through local.conf.
                 util.add_message(messages, 'abi-changed',
                                 '%s: ABI changed from reference build, logs: %s'
-                                % (name, out))
+                                % (pn, out))
 
 
     t1 = time.monotonic()
