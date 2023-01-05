@@ -1,5 +1,6 @@
 
 inherit binaryaudit
+inherit insane
 
 BUILDHISTORY_FEATURES += "abicheck"
 
@@ -53,18 +54,16 @@ python binary_audit_gather_abixml() {
 do_install[postfuncs] += "${@ "binary_audit_gather_abixml" if ("class-target" == d.getVar("CLASSOVERRIDE")) else "" }"
 do_install[vardepsexclude] += "${@ "binary_audit_gather_abixml" if ("class-target" == d.getVar("CLASSOVERRIDE")) else "" }"
 
-python binary_audit_abixml_compare_to_ref() {
+QARECIPETEST[abi-changed] = "package_qa_binary_audit_abixml_compare_to_ref"
+def package_qa_binary_audit_abixml_compare_to_ref(pn, d, messages):
     import glob, os, time
     from binaryaudit import util
     from binaryaudit import abicheck
 
     t0 = time.monotonic()
-
-    pn = d.getVar("PN")
     
- 
     recipe_suppr = d.getVar("WORKDIR") + "/abi*.suppr"
-    
+
     suppr = glob.glob(recipe_suppr)
 
     if os.path.isfile(str(d.getVar("BINARY_AUDIT_GLOBAL_SUPPRESSION_FILE"))):
@@ -94,10 +93,8 @@ python binary_audit_abixml_compare_to_ref() {
     if not os.path.exists(cur_abidiff_dir):
         bb.utils.mkdirhier(cur_abidiff_dir)
 
-    for fpath in glob.iglob("{}/packages/*/{}/**".format(ref_basedir, pn), recursive = True):
-        if os.path.basename(fpath) != "binaryaudit": 
-            continue
 
+    for fpath in glob.iglob("{}/packages/*/**/{}/binaryaudit".format(ref_basedir, pn), recursive = True):
         ref_abixml_dir = os.path.join(fpath, "abixml")
         if not os.path.isdir(ref_abixml_dir):
             util.note("No ABI reference found for '{}' under '{}'".format(pn, ref_abixml_dir))
@@ -106,6 +103,9 @@ python binary_audit_abixml_compare_to_ref() {
         # A correct reference history dir for this package is found, proceed
         # to see if there's something to compare
         for xml_fn in os.listdir(cur_abixml_dir):
+            if not xml_fn.endswith('xml'):
+                continue
+
             ref_xml_fpath = os.path.join(ref_abixml_dir, xml_fn)
             if not os.path.isfile(ref_xml_fpath):
                 util.note("File '{}' is not present in the reference ABI dump".format(xml_fn))
@@ -149,8 +149,10 @@ python binary_audit_abixml_compare_to_ref() {
                 status_ln = " ".join(status_bits)
                 # XXX Just warn for now if there's anythnig non 0 in the status.
                 #     Should be made finer configurable through local.conf.
-                util.warn("abicheck: {} diff bits: {}".format(sn, "".join(status_ln)))
-                #bb.error("abicheck output: '{}'".format(out))
+                util.add_message(messages, 'abi-changed',
+                                '%s: ABI changed from reference build, logs: %s'
+                                % (pn, out))
+
 
     t1 = time.monotonic()
     duration_fl = cur_abidiff_dir + ".duration"
@@ -158,8 +160,4 @@ python binary_audit_abixml_compare_to_ref() {
     with open(duration_fl, "w") as f:
         f.write(u"{}".format(t1 - t0))
         f.close()
-}
 
-# Target binaries are the only interest.
-do_install[postfuncs] += "${@ "binary_audit_abixml_compare_to_ref" if ("class-target" == d.getVar("CLASSOVERRIDE")) else "" }"
-do_install[vardepsexclude] += "${@ "binary_audit_abixml_compare_to_ref" if ("class-target" == d.getVar("CLASSOVERRIDE")) else "" }"
